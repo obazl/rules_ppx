@@ -1,0 +1,7 @@
+load("@bazel_skylib//rules:common_settings.bzl",
+     "bool_flag", "bool_setting")
+
+package(default_visibility = ["//visibility:public"])
+
+bool_flag( name = "text", build_setting_default = False)
+bool_setting( name = "text!", build_setting_default = True)

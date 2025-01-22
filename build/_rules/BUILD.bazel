@@ -1,0 +1,24 @@
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
+## The rules in this file provide support for stardoc processing.
+
+exports_files(glob(["*.bzl"]))
+
+bzl_library(
+    name = "ppx_rules",
+    srcs = glob(["ppx*.bzl", "impl*.bzl"]) + ["options.bzl"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@bazel_skylib//lib:collections",
+        "@bazel_skylib//rules:common_settings",
+        "@bazel_skylib//lib:paths",
+        "@bazel_skylib//lib:structs",
+        # "@obazl_rules_opam//opam/_providers:providers",
+        "//ocaml/_actions:actions",
+        # "//ocaml/_config:config",
+        "//ocaml/_functions:functions",
+        "//providers:ocaml.bzl",
+        # "//ppx:providers",
+        "//ppx/_config:config",
+    ],
+)
