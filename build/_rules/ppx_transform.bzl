@@ -6,6 +6,9 @@ load("@rules_ocaml//providers:ocaml.bzl",
      "OcamlModuleMarker",
      "OcamlNsResolverProvider")
 
+load("@rules_ocaml//ocaml/_transitions:in_transitions.bzl",
+     "toolchain_in_transition")
+
 load("@rules_ocaml//ocaml:aggregators.bzl",
      "aggregate_deps",
      "OCamlProvider",
@@ -237,7 +240,7 @@ ppx_transform = rule(
 
         _rule = attr.string( default = "ppx_transform" ),
     ),
-
+    # cfg = toolchain_in_transition,
     fragments = ["platform"],
     host_fragments = ["platform"],
     incompatible_use_toolchain_transition = True,

@@ -41,7 +41,7 @@ def _ppx_inline_test_impl(name,
     # native.config_setting(name = name + "_bye",
     #                       flag_values = {name + "_t": "bye"})
 
-    prolog = ["@opam.ppx_inline_test//lib/runner/lib"]
+    prolog = ["@opam.ppx_inline_test//runner/lib/lib"]
     if prologue:
         # print(prologue)
         prolog = prolog + prologue
@@ -58,7 +58,7 @@ def _ppx_inline_test_impl(name,
 
     ocaml_test(
         name = name,
-        main = "@opam.ppx_inline_test//lib/runner",
+        main = "@opam.ppx_inline_test//runner/lib",
         args = select(argdict),
         prologue = prolog,
         visibility = visibility,
@@ -165,7 +165,7 @@ def _ppx_inline_test_signature_impl(name,
     ocaml_signature(
         name = name,
         src  = name + "_ippx.ml",
-        deps = ["@opam.ppxlib//lib/ppxlib"],
+        deps = ["@opam.ppxlib//lib"],
         visibility = visibility,
         **kwargs
     )
@@ -210,7 +210,7 @@ def _ppx_inline_test_module_impl(name,
         name = name,
         struct = name + "_ppx.ml",
         sig    = sig,
-        deps = ["@opam.ppxlib//lib/ppxlib"],
+        deps = ["@opam.ppxlib//lib"],
         visibility = visibility,
         **kwargs
     )
@@ -252,7 +252,7 @@ def _ppx_inline_test_ppx_impl(name,
                               visibility = [":__pkg__"],
                               **kwargs):
 
-    prolog = ["@opam.ppx_inline_test//lib/ppx_inline_test"]
+    prolog = ["@opam.ppx_inline_test//lib"]
     if prologue:
         prolog.extend(prologue)
 
@@ -266,7 +266,7 @@ def _ppx_inline_test_ppx_impl(name,
     ocaml_module(
         name = name + "_Driver",
         struct = name + "_ppxlib_driver.ml",
-        deps = ["@opam.ppxlib//lib/ppxlib"],
+        deps = ["@opam.ppxlib//lib"],
         visibility = visibility,
     )
 

@@ -1,15 +1,15 @@
 # rules_ppx
 Bazel rules for using and developing OCaml PPX software
 
-Documentation: [docs_ocaml](https://obazl.github.io/docs_ocaml/)
+Documentation: [docs_obazl](https://obazl.github.io/docs_obazl/)
 
-Demos:  [dev_obazl](https://github.com/obazl/dev_obazl)
+Demos:  [demos_obazl](https://github.com/obazl/demos_obazl)
 
 See also:
 
-* [obazl_rules_opam](https://github.com/obazl/rules_opam)
+* [tools_opam](https://github.com/obazl/tool_opam)
 
-* [obazl_tools_bazel](https://github.com/obazl/tools_bazel)
+* [tools_obazl](https://github.com/obazl/tools_obazl)
 
 ## Acknowledgements
 

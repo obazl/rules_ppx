@@ -107,7 +107,7 @@ ppx_executable = rule(
             # allow_single_file = True,
             # providers = [
             #     [OcamlModuleMarker], [PpxExecutableMarker]
-            #     # or @ppxlib//lib/runner"
+            #     # or @opam.ppxlib//lib/runner"
             # ],
             default = None,
             # cfg = ocaml_binary_deps_out_transition
