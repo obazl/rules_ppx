@@ -1,22 +1,22 @@
 load("@bazel_skylib//lib:paths.bzl", "paths")
 
-load("@rules_ocaml//providers:ocaml.bzl",
+load("@rules_ocaml//build:providers.bzl", "OCamlDepsProvider")
+load("@rules_ocaml//build:providers.bzl",
      "OcamlExecutableMarker",
-     "OcamlProvider",
-     "OcamlModuleMarker",
-     "OcamlNsResolverProvider")
+     "OCamlModuleProvider",
+     "OCamlNsResolverProvider")
 
-load("@rules_ocaml//ocaml/_transitions:in_transitions.bzl",
+load("@rules_ocaml//build/_transitions:in_transitions.bzl",
      "toolchain_in_transition")
 
-load("@rules_ocaml//ocaml:aggregators.bzl",
-     "aggregate_deps",
-     "OCamlProvider",
+load("@rules_ocaml//lib:merge.bzl",
+     "merge_deps",
+     # "MergedDepsProvider",
      "DepsAggregator")
 
-load("@rules_ocaml//ocaml/_functions:module_naming.bzl", "derive_module_name_from_file_name")
+load("@rules_ocaml//build/_lib:module_naming.bzl", "derive_module_name_from_file_name")
 
-load("@rules_ocaml//ocaml/_rules:options.bzl",
+load("@rules_ocaml//build/_lib:options.bzl",
      "options",
      "options_module",
      "options_ns_opts",
@@ -25,7 +25,7 @@ load("@rules_ocaml//ocaml/_rules:options.bzl",
 # load("@rules_ocaml//ocaml/_rules:impl_common.bzl", "dsorder")
 load(":impl_ppx_transform.bzl", "impl_ppx_transform")
 
-load("@rules_ocaml//ocaml/_debug:colors.bzl",
+load("@rules_ocaml//lib:colors.bzl",
      "CCRED", "CCDER", "CCGRN", "CCBLU", "CCBLUBG", "CCMAG", "CCCYN", "CCRESET")
 
 ## ocaml/_rules/impl_common.bzl
@@ -34,6 +34,53 @@ dsorder = "postorder"
 # opam_lib_prefix = "external/ocaml/lib"
 module_sep = "__"
 resolver_suffix = module_sep + "0Resolver"
+
+##########################
+def _handle_ns_stuff(ctx):
+
+    debug_ns = False
+
+    if not hasattr(ctx.attr, "ns"):
+        ## this is a plain ocaml_module w/o namespacing
+        return  (False, # ns_enabled
+                 None,  # nsr_provider = NsResolverProvider
+                 None)  # ns_resolver module
+
+    ns_enabled = False
+    nsr_provider = None  ## NsResolverProvider
+    nsr_target = None  ## resolver module
+
+    ## bottom-up namespacing
+    if ctx.attr.ns:
+        print("NS %s" % ctx.attr.ns)
+        ns_enabled = True
+        nsr_target = ctx.attr.ns
+        nsr_provider = ctx.attr.ns[OCamlNsResolverProvider]
+        if hasattr(nsr_provider, "modname"):
+            # e.g. Foo__
+            # ns_module_name = nsr_provider.modname
+            ns_enabled = True
+
+    ## top-down namespacing
+    elif ctx.attr._ns_resolver:
+        nsr_provider = ctx.attr._ns_resolver[OCamlNsResolverProvider]
+        if debug_ns:
+            print("_ns_resolver: %s" % ctx.attr._ns_resolver)
+            print("nsr_provider: %s" % nsr_provider)
+        if not nsr_provider.tag == "NULL":
+            ns_enabled = True
+            # fail("XXXXXXXXXXXXXXXX")
+            nsr_target = ctx.attr._ns_resolver ## [0] # index by int?
+            # ns_resolver_files = ctx.files._ns_resolver ## [0] # index by int?
+
+    else:
+        if debug_ns: print("m: no resolver for %s" % ctx.label)
+        nsr_target = None
+        # ns_resolver_files = []
+
+    return  (ns_enabled,
+             nsr_provider,
+             nsr_target)
 
 ###############################
 def _ppx_transform(ctx):
@@ -54,16 +101,24 @@ def _ppx_transform(ctx):
 
     # return impl_module(ctx) # , tc.target, tc.compiler, [])
 
+    ns_enabled = False
+    (ns_enabled,
+     nsr_provider, ## NsResolverProvider
+     nsr_target) = _handle_ns_stuff(ctx)
+
 # def _resolve_modname(ctx):
     debug = False
     if debug: print("deriving module name from structfile: %s" % ctx.file.src.basename)
 
     (mname, ext) = paths.split_extension(ctx.file.src.basename)
-    (from_name, modname) = derive_module_name_from_file_name(ctx, mname)
+    (from_name,
+     modname) = derive_module_name_from_file_name(
+         ctx, mname, nsr_provider
+     )
     if debug: print("derived module name: %s" % modname)
 
     # depsets = DepsAggregator(
-    #     deps = OCamlProvider(
+    #     deps = MergedDepsProvider(
     #         sigs = [],
     #         structs = [],
     #         ofiles  = [],
@@ -74,7 +129,7 @@ def _ppx_transform(ctx):
     #         paths  = [],
     #         jsoo_runtimes = [], # runtime.js files
     #     ),
-    #     codeps = OCamlProvider(
+    #     codeps = MergedDepsProvider(
     #         sigs = [],
     #         structs = [],
     #         ofiles = [],
@@ -88,7 +143,7 @@ def _ppx_transform(ctx):
     #     ccinfos = []
     # )
 
-    # depsets = aggregate_deps(ctx, ctx.attr.ppx, depsets)
+    # depsets = merge_deps(ctx, ctx.attr.ppx, depsets)
 
     ################################################################
     # (src, outfile) = impl_ppx_transform(
@@ -105,7 +160,7 @@ def _ppx_transform(ctx):
     #     DefaultInfo(files = depset(direct = [outfile])),
     # ]
 
-    # _ocamlProvider = OcamlProvider(
+    # _ocamlProvider = OCamlDepsProvider(
     #     # struct = depset(direct = [outfile]),
     #     sigs    = depset(order="postorder",
     #                      # direct=sigs_primary,
@@ -137,7 +192,7 @@ def _ppx_transform(ctx):
     # )
     # providers.append(_ocamlProvider)
 
-    # ppxCodepsProvider = OcamlCodepsProvider(
+    # ppxCodepsProvider = OCamlCodepsProvider(
     #     sigs       = depset(order=dsorder,
     #                         transitive = depsets.codeps.sigs),
     #     structs    = depset(order=dsorder,
@@ -157,8 +212,8 @@ def _ppx_transform(ctx):
     # )
     # providers.append(ppxCodepsProvider)
 
-    # coprovider = ctx.attr.ppx[OcamlCodepsProvider]
-    # ppxCodepsProvider = OcamlCodepsProvider(
+    # coprovider = ctx.attr.ppx[OCamlCodepsProvider]
+    # ppxCodepsProvider = OCamlCodepsProvider(
     #     sigs       = coprovider.sigs,
     #     structs       = coprovider.structs,
     #     ofiles       = coprovider.ofiles,
@@ -186,13 +241,13 @@ def _ppx_transform(ctx):
     return providers
 
 ################################
-rule_options = options("ocaml")
+rule_options = options("rules_ocaml")
 # rule_options.update(options_ppx)
 
 ####################
 ppx_transform = rule(
     implementation = _ppx_transform,
- # Provides: [OcamlModuleMarker](providers_ocaml.md#ocamlmoduleprovider).
+ # Provides: [OCamlModuleProvider](providers_ocaml.md#ocamlmoduleprovider).
     doc = """
     Runs a ppx executable to transform a source file. Also propagates ppx_codeps from the provider of the ppx dependency.
     """,

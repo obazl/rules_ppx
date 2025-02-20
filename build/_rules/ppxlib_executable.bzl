@@ -1,25 +1,25 @@
 load("@rules_ocaml//ocaml:providers.bzl",
      "OcamlArchiveMarker",
-     "OcamlImportMarker",
-     "OcamlLibraryMarker",
-     "OcamlModuleMarker",
+     "OCamlImportProvider",
+     "OCamlLibraryProvider",
+     "OCamlModuleProvider",
      "OcamlNsMarker")
 
 load("@rules_ocaml//ppx:providers.bzl",
      "PpxExecutableMarker",
 )
 
-load("@rules_ocaml//ocaml/_transitions:in_transitions.bzl",
+load("@rules_ocaml//build/_transitions:in_transitions.bzl",
      "ppx_executable_in_transition")
 
-load("@rules_ocaml//ocaml/_transitions:out_transitions.bzl",
+load("@rules_ocaml//build/_transitions:out_transitions.bzl",
      "ocaml_binary_deps_out_transition")
 
-load("@rules_ocaml//ocaml/_rules:options.bzl", "options")
+load("@rules_ocaml//build/_lib:options.bzl", "options")
 
 load("@rules_ocaml//ocaml/_rules:impl_binary.bzl", "impl_binary")
 
-load("@rules_ocaml//ocaml/_debug:colors.bzl", "CCDER", "CCGAM", "CCRESET")
+load("@rules_ocaml//lib:colors.bzl", "CCDER", "CCGAM", "CCRESET")
 
 CCBLURED="\033[44m\033[31m"
 
@@ -99,7 +99,7 @@ ppxlib_executable = rule(
             doc = "A module to be listed last in the list of dependencies. For more information see [Main Module](../ug/ppx.md#main_module).",
             # mandatory = True,
             # allow_single_file = False,
-            providers = [[OcamlModuleMarker], [PpxExecutableMarker]],
+            providers = [[OCamlModuleProvider], [PpxExecutableMarker]],
             default = "@obazl//ppxlib/driver:standalone",
             # cfg = ocaml_binary_deps_out_transition
         ),
@@ -107,9 +107,9 @@ ppxlib_executable = rule(
         deps = attr.label_list(
             doc = "List of OCaml dependencies.",
             providers = [[OcamlArchiveMarker],
-                         [OcamlImportMarker],
-                         [OcamlLibraryMarker],
-                         [OcamlModuleMarker],
+                         [OCamlImportProvider],
+                         [OCamlLibraryProvider],
+                         [OCamlModuleProvider],
                          [OcamlNsMarker],
                          [CcInfo]],
             cfg = _ppx_deps_out_transition
@@ -148,7 +148,7 @@ ppxlib_executable = rule(
 
         # manifest = attr.label_list(
         #     doc = "Mereological deps to be directly linked into ppx executable. Modular deps should be listed in ocaml_module, ppx_module rules.",
-        #     providers = [[DefaultInfo], [OcamlModuleMarker], [CcInfo]],
+        #     providers = [[DefaultInfo], [OCamlModuleProvider], [CcInfo]],
         #     cfg = _ppx_deps_out_transition
         # ),
 
@@ -188,10 +188,20 @@ ppxlib_executable = rule(
 
         ),
 
-        vm_runtime = attr.label(
-            doc = "@ocaml_rules//cfg/runtime:dynamic (default), @ocaml_rules//cfg/runtime:static, or a custom ocaml_vm_runtime target label",
-            default = "@rules_ocaml//cfg/runtime"
+        runtime = attr.label(
+            doc = "runtime to use",
+            default = "@rules_ocaml//rt:std"
         ),
+
+        vm_linkage = attr.label(
+            doc = "dynamic (default) or static",
+            default = "@rules_ocaml//vm/linkage:static"
+        ),
+
+        # vm_runtime = attr.label(
+        #     doc = "@ocaml_rules//cfg/runtime:dynamic (default), @ocaml_rules//cfg/runtime:static, or a custom ocaml_vm_runtime target label",
+        #     default = "@rules_ocaml//cfg/runtime"
+        # ),
 
         _rule = attr.string( default = "ppxlib_executable" ),
         _tags = attr.string_list( default  = ["ppx", "executable"] ),

@@ -1,14 +1,13 @@
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 
-load("@rules_ocaml//providers:ocaml.bzl",
+load("@rules_ocaml//build:providers.bzl", "OCamlDepsProvider")
+load("@rules_ocaml//build:providers.bzl",
      "OcamlExecutableMarker",
-     "OcamlProvider",
-     "OcamlModuleMarker",
-     "OcamlNsResolverProvider")
-load("@rules_ocaml//providers:codeps.bzl", "OcamlCodepsProvider")
+     "OCamlNsResolverProvider")
+load("@rules_ocaml//build:providers.bzl", "OCamlCodepsProvider")
 
-# load("//providers:ocaml.bzl", "PpxExecutableMarker") #, "PpxPrintSettingMarker")
+# load("//build:providers.bzl", "PpxExecutableMarker") #, "PpxPrintSettingMarker")
 # load("//ocaml/_functions:utils.bzl",
 #      "get_sdkpath")
 
@@ -278,10 +277,10 @@ def impl_ppx_transform(rule, ctx, srcfile, dst):
 
     providers = [DefaultInfo(files = depset(direct = [outfile]))]
 
-    if OcamlProvider in ctx.attr.ppx:
-        providers.append(ctx.attr.ppx[OcamlProvider])
-    if OcamlCodepsProvider in ctx.attr.ppx:
-        providers.append(ctx.attr.ppx[OcamlCodepsProvider])
+    if OCamlDepsProvider in ctx.attr.ppx:
+        providers.append(ctx.attr.ppx[OCamlDepsProvider])
+    if OCamlCodepsProvider in ctx.attr.ppx:
+        providers.append(ctx.attr.ppx[OCamlCodepsProvider])
     if CcInfo in ctx.attr.ppx:
         providers.append(ctx.attr.ppx[CcInfo])
 

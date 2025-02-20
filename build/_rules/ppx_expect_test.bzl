@@ -1,14 +1,14 @@
 load("@bazel_skylib//lib:paths.bzl", "paths")
 
 load("@rules_ocaml//ocaml:providers.bzl",
-     "OcamlModuleMarker",
+     "OCamlModuleProvider",
      "OcamlProvider",
      "OcamlVmRuntimeProvider")
 
 load("@rules_ocaml//ocaml/_rules:impl_ccdeps.bzl",
      "extract_cclibs", "dump_CcInfo")
 
-load("@rules_ocaml//ocaml/_functions:deps.bzl", "aggregate_deps")
+load("@rules_ocaml//lib:merge.bzl", "merge_deps")
 
 # load(":impl_binary.bzl", "impl_binary")
 
@@ -16,7 +16,7 @@ load("@rules_ocaml//ocaml/_functions:deps.bzl", "aggregate_deps")
 
 # load(":options.bzl", "options", "options_binary")
 
-load("@rules_ocaml//ocaml/_debug:colors.bzl", "CCRED", "CCYEL", "CCRESET")
+load("@rules_ocaml//lib:colors.bzl", "CCRED", "CCYEL", "CCRESET")
 
 def fdirname(f):
     return f.dirname
@@ -74,7 +74,7 @@ def _ppx_expect_test(ctx):
     )
 
     for dep in ctx.attr.deps:
-        depsets = aggregate_deps(ctx, dep, depsets)
+        depsets = merge_deps(ctx, dep, depsets)
 
     # archives_depset = depset(transitive = depsets.deps.archives)
     # print("archives_depset: %s" % archives_depset)
@@ -299,7 +299,7 @@ def _ppx_expect_test(ctx):
 
     if tc.target == "vm":
 
-        # vmlibs =  lib/stublibs/dll*.so, set by toolchain
+        # dllibs =  lib/stublibs/dll*.so, set by toolchain
         # only needed for bytecode mode, else we get errors like:
         # Error: I/O error: dllbase_internalhash_types_stubs.so: No such
         # file or directory
@@ -308,13 +308,13 @@ def _ppx_expect_test(ctx):
         # Fatal error: cannot load shared library dllbase_internalhash_types_stubs
         # Reason: dlopen(dllbase_internalhash_types_stubs.so, 0x000A): tried: 'dllbase_internalhash_types_stubs.so' (no such file) ... etc.
 
-        vmlibs = tc.vmlibs
+        dllibs = tc.dllibs
         includes = []
 
         ## WARNING: both -dllpath and -I are required!
-        # args.add("-ccopt", "-L" + tc.vmlibs[0].dirname)
-        args.add("-dllpath", tc.vmlibs[0].dirname)
-        args.add("-I", tc.vmlibs[0].dirname)
+        # args.add("-ccopt", "-L" + tc.dllibs[0].dirname)
+        args.add("-dllpath", tc.dllibs[0].dirname)
+        args.add("-I", tc.dllibs[0].dirname)
 
         # if debug:
         #     print("{c}vm_runtime:{r} {rt}".format(
@@ -379,7 +379,7 @@ def _ppx_expect_test(ctx):
                 # includes.append(cclib.dirname)
                 # args.add(cclib.short_path)
     else: # tc.target == sys
-        vmlibs = [] ## we never need vmlibs for native code
+        dllibs = [] ## we never need dllibs for native code
         ## this accomodates ml libs with cc deps
         ## e.g. 'base' depends on libbase_stubs.a
         for cclib in static_cc_deps:
@@ -439,7 +439,7 @@ def _ppx_expect_test(ctx):
     print("cc_runfiles: %s" % cc_runfiles)
     # fail("xxxx")
     #### RUNFILE DEPS ####
-    rfiles = tc.vmlibs + cc_runfiles # + ctx.files.data
+    rfiles = tc.dllibs + cc_runfiles # + ctx.files.data
     # if ctx.attr.strip_data_prefixes:
     #     myrunfiles = ctx.runfiles(
     #         files = rfiles,
@@ -461,7 +461,7 @@ def _ppx_expect_test(ctx):
     return defaultInfo
 
 ################################
-# rule_options = options("ocaml")
+# rule_options = options("rules_ocaml")
 # rule_options.update(options_binary())
 
 ##################
@@ -480,7 +480,7 @@ ppx_expect_test = rule(
             doc = "Modules under test, instrumented using ppx_expect.",
             providers = [
                 [OcamlProvider],
-                [OcamlModuleMarker],
+                [OCamlModuleProvider],
             ]
         ),
 
@@ -493,7 +493,7 @@ ppx_expect_test = rule(
             ],
             providers = [
                 [OcamlProvider],
-                [OcamlModuleMarker],
+                [OCamlModuleProvider],
             ]
         ),
         vm_runtime = attr.label(

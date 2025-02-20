@@ -17,7 +17,7 @@ bzl_library(
         "//ocaml/_actions:actions",
         # "//ocaml/_config:config",
         "//ocaml/_functions:functions",
-        "//providers:ocaml.bzl",
+        "//build:providers.bzl",
         # "//ppx:providers",
         "//ppx/_config:config",
     ],

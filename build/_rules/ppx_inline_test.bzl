@@ -3,10 +3,10 @@ load("@rules_ocaml//build:rules.bzl",
 load("@rules_ppx//build/_rules:ppx_executable.bzl", "ppx_executable")
 load("@rules_ppx//build/_rules:ppx_transform.bzl", "ppx_transform")
 
-load("@rules_ocaml//ocaml/_rules:impl_binary.bzl", "impl_binary")
-load("@rules_ocaml//ocaml/_rules:options.bzl",
+load("@rules_ocaml//build/_rules/ocaml_binary:impl_binary.bzl", "impl_binary")
+load("@rules_ocaml//build/_lib:options.bzl",
      "options", "options_binary")
-load("@rules_ocaml//ocaml/_debug:colors.bzl", "CCYEL", "CCRESET")
+load("@rules_ocaml//lib:colors.bzl", "CCYEL", "CCRESET")
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@bazel_skylib//lib:collections.bzl", "collections")
 
