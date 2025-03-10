@@ -4,7 +4,7 @@ load("@rules_ppx//build/_rules:ppx_executable.bzl", "ppx_executable")
 load("@rules_ppx//build/_rules:ppx_transform.bzl", "ppx_transform")
 
 load("@rules_ocaml//build/_rules/ocaml_binary:impl_binary.bzl", "impl_binary")
-load("@rules_ocaml//build/_lib:options.bzl",
+load("@rules_ocaml//build/_lib:apis.bzl",
      "options", "options_binary")
 load("@rules_ocaml//lib:colors.bzl", "CCYEL", "CCRESET")
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
@@ -78,6 +78,10 @@ ppx_inline_test = macro(
         ),
         "prologue": attr.label_list(configurable = False),
         "epilogue": attr.label_list(configurable = False),
+        "vm_linkage": attr.string(
+            configurable = False,
+            default = "static",
+        ),
         "args": None,
         "main": None,
     },

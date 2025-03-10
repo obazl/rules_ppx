@@ -15,7 +15,7 @@ load("@rules_ocaml//build/_transitions:in_transitions.bzl",
 load("@rules_ocaml//build/_transitions:out_transitions.bzl",
      "ocaml_binary_deps_out_transition")
 
-load("@rules_ocaml//build/_lib:options.bzl", "options")
+load("@rules_ocaml//build/_lib:apis.bzl", "options")
 
 load("@rules_ocaml//ocaml/_rules:impl_binary.bzl", "impl_binary")
 
@@ -186,6 +186,13 @@ ppxlib_executable = rule(
         cc_linkopts = attr.string_list(
             doc = "List of C/C++ link options. E.g. `[\"-lstd++\"]`.",
 
+        ),
+
+        _vm_ext = attr.label(
+            default = "@rules_ocaml//cfg/executable:vm_ext"
+        ),
+        _sys_ext = attr.label(
+            default = "@rules_ocaml//cfg/executable:sys_ext"
         ),
 
         runtime = attr.label(

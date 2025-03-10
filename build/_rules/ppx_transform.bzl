@@ -16,7 +16,7 @@ load("@rules_ocaml//lib:merge.bzl",
 
 load("@rules_ocaml//build/_lib:module_naming.bzl", "derive_module_name_from_file_name")
 
-load("@rules_ocaml//build/_lib:options.bzl",
+load("@rules_ocaml//build/_lib:apis.bzl",
      "options",
      "options_module",
      "options_ns_opts",

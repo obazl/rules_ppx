@@ -12,7 +12,7 @@ load("@rules_ppx//build/_transitions:ppx_executable_in_transition.bzl",
 load("@rules_ocaml//build/_transitions:out_transitions.bzl",
      "ocaml_binary_deps_out_transition")
 
-load("@rules_ocaml//build/_lib:options.bzl", "options")
+load("@rules_ocaml//build/_lib:apis.bzl", "options")
 
 load("@rules_ocaml//build/_rules/ocaml_binary:impl_binary.bzl", "impl_binary")
 
@@ -124,6 +124,8 @@ ppx_executable = rule(
         ## so instead of using 'cfg = "exec"' we use
         ## a custom inbound transition to set the
         ## target platform.
+
+        archive_deps = attr.bool(default = False),
 
         prologue = attr.label_list(
             doc = "List of OCaml dependencies.",
@@ -245,6 +247,13 @@ ppx_executable = rule(
         cc_linkopts = attr.string_list(
             doc = "List of C/C++ link options. E.g. `[\"-lstd++\"]`.",
 
+        ),
+
+        _vm_ext = attr.label(
+            default = "@rules_ocaml//cfg/executable:vm_ext"
+        ),
+        _sys_ext = attr.label(
+            default = "@rules_ocaml//cfg/executable:sys_ext"
         ),
 
         runtime = attr.label(
