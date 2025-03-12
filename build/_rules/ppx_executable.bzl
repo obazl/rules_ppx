@@ -79,6 +79,9 @@ ppx_executable = rule(
     doc = """Generates a PPX executable.  Provides: [OcamlExecutableMarker](providers_ppx.md#ppxexecutableprovider).
 
     """,
+
+    ## FIXME: use apis.bzl from rules_ocaml
+
     attrs = dict(
         options("rules_ocaml"),
         _linkall = attr.label(default = "@rules_ocaml//cfg/executable:linkall"),
@@ -261,9 +264,10 @@ ppx_executable = rule(
             default = "@rules_ocaml//rt:std"
         ),
 
-        vm_linkage = attr.label(
-            doc = "dynamic (default) or static",
-            default = "@rules_ocaml//vm/linkage:static"
+        vm_linkage = attr.string(
+            doc = "custom, dynamic or static. Custom means link with -custom flag; static with -output-complete-exe",
+            values = ["custom", "static", "dynamic"],
+            default = "custom"
         ),
 
         # vm_runtime = attr.label(
