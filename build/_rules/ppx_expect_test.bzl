@@ -1,11 +1,11 @@
 load("@bazel_skylib//lib:paths.bzl", "paths")
 
-load("@rules_ocaml//ocaml:providers.bzl",
+load("@rules_ocaml//build:providers.bzl",
      "OCamlModuleProvider",
-     "OcamlProvider",
-     "OcamlVmRuntimeProvider")
+     "OCamlDepsProvider",
+     "OCamlRuntimeProvider")
 
-load("@rules_ocaml//ocaml/_rules:impl_ccdeps.bzl",
+load("@rules_ocaml//build/_lib:ccdeps.bzl",
      "extract_cclibs", "dump_CcInfo")
 
 load("@rules_ocaml//lib:merge.bzl", "merge_deps")
@@ -137,25 +137,25 @@ def _ppx_expect_test(ctx):
     hidden_deps = []
     #FIXME: use archives_secondary, sigs_secondary, etc.
     for dep in ctx.attr.deps:
-        if OcamlProvider in dep:
-            hidden_deps.append(dep[OcamlProvider].sigs)
-            hidden_deps.append(dep[OcamlProvider].archives)
+        if OCamlDepsProvider in dep:
+            hidden_deps.append(dep[OCamlDepsProvider].sigs)
+            hidden_deps.append(dep[OCamlDepsProvider].archives)
             if tc.target == "sys":
-                hidden_deps.append(dep[OcamlProvider].afiles)
-                hidden_deps.append(dep[OcamlProvider].astructs)
-                hidden_deps.append(dep[OcamlProvider].ofiles)
+                hidden_deps.append(dep[OCamlDepsProvider].afiles)
+                hidden_deps.append(dep[OCamlDepsProvider].astructs)
+                hidden_deps.append(dep[OCamlDepsProvider].ofiles)
         if CcInfo in dep:
             # print("CcInfo dep: %s" % dep)
             cc_deps_primary.append(dep[CcInfo])
 
     for dep in ctx.attr._deps:
-        if OcamlProvider in dep:
-            hidden_deps.append(dep[OcamlProvider].sigs)
-            hidden_deps.append(dep[OcamlProvider].archives)
+        if OCamlDepsProvider in dep:
+            hidden_deps.append(dep[OCamlDepsProvider].sigs)
+            hidden_deps.append(dep[OCamlDepsProvider].archives)
             if tc.target == "sys":
-                hidden_deps.append(dep[OcamlProvider].afiles)
-                hidden_deps.append(dep[OcamlProvider].astructs)
-                hidden_deps.append(dep[OcamlProvider].ofiles)
+                hidden_deps.append(dep[OCamlDepsProvider].afiles)
+                hidden_deps.append(dep[OCamlDepsProvider].astructs)
+                hidden_deps.append(dep[OCamlDepsProvider].ofiles)
         if CcInfo in dep:
             # print("CcInfo dep: %s" % dep)
             cc_deps_primary.append(dep[CcInfo])
@@ -319,8 +319,8 @@ def _ppx_expect_test(ctx):
         # if debug:
         #     print("{c}vm_runtime:{r} {rt}".format(
         #         c=CCGRN,r=CCRESET, rt = ctx.attr.vm_runtime))
-        #     print("vm_runtime[OcamlVmRuntimeProvider: %s" %
-        #           ctx.attr.vm_runtime[OcamlVmRuntimeProvider])
+        #     print("vm_runtime[OCamlRuntimeProvider: %s" %
+        #           ctx.attr.vm_runtime[OCamlRuntimeProvider])
 
         # if "ppx" in ctx.attr.tags or ctx.attr._rule == "ppx_executable":
             ## Currently we default to a custom runtime.
@@ -336,7 +336,7 @@ def _ppx_expect_test(ctx):
             # args.add("-ccopt", "-L" + cclib.dirname)
             # args.add("-cclib", "-l" + cclib.basename)
 
-        if ctx.attr.vm_runtime[OcamlVmRuntimeProvider].kind == "dynamic":
+        if ctx.attr.vm_runtime[OCamlRuntimeProvider].kind == "dynamic":
             for cclib in dynamic_cc_deps:
                 # print("cclib.short_path: %s" % cclib.short_path)
                 # print("cclib.dirname: %s" % cclib.dirname)
@@ -365,7 +365,7 @@ def _ppx_expect_test(ctx):
                 # cc_runfiles.append(cclib)
                 # fail("xxxxxxxxxxxxxxxx")
 
-        elif ctx.attr.vm_runtime[OcamlVmRuntimeProvider].kind == "static":
+        elif ctx.attr.vm_runtime[OCamlRuntimeProvider].kind == "static":
             ## should not be any .so files???
             sincludes = []
             for dep in static_cc_deps:
@@ -393,12 +393,12 @@ def _ppx_expect_test(ctx):
 
     deps = []
     for dep in ctx.attr.deps:
-        deps.append(dep[OcamlProvider].archives)
-        deps.append(dep[OcamlProvider].afiles)
+        deps.append(dep[OCamlDepsProvider].archives)
+        deps.append(dep[OCamlDepsProvider].afiles)
 
     exe_inputs = depset(
         direct = action_outputs # from previous action
-        # + ctx.attr.deps[OcamlProvider].archives,
+        # + ctx.attr.deps[OCamlDepsProvider].archives,
         + static_cc_deps
         + dynamic_cc_deps,
         transitive = hidden_deps # from previous action
@@ -469,6 +469,9 @@ ppx_expect_test = rule(
     implementation = _ppx_expect_test,
 
     doc = """Test rule for running inline ppx_expect tests.
+
+WARNING: not yet supported due to bug in ppx_expect.
+
     """,
 
     attrs = dict(
@@ -479,7 +482,7 @@ ppx_expect_test = rule(
         deps = attr.label_list(
             doc = "Modules under test, instrumented using ppx_expect.",
             providers = [
-                [OcamlProvider],
+                [OCamlDepsProvider],
                 [OCamlModuleProvider],
             ]
         ),
@@ -492,7 +495,7 @@ ppx_expect_test = rule(
                 # "@ppx_expect//lib/config",
             ],
             providers = [
-                [OcamlProvider],
+                [OCamlDepsProvider],
                 [OCamlModuleProvider],
             ]
         ),

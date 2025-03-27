@@ -1,5 +1,5 @@
 load("@rules_ocaml//build:providers.bzl",
-     "OcamlArchiveMarker",
+     "OCamlArchiveProvider",
      "OcamlExecutableMarker",
      "OCamlImportProvider",
      "OCamlLibraryProvider",
@@ -12,7 +12,7 @@ load("@rules_ppx//build/_transitions:ppx_executable_in_transition.bzl",
 load("@rules_ocaml//build/_transitions:out_transitions.bzl",
      "ocaml_binary_deps_out_transition")
 
-load("@rules_ocaml//build/_lib:apis.bzl", "options")
+load("@rules_ocaml//build/_lib:apis.bzl", "options", "options_binary")
 
 load("@rules_ocaml//build/_rules/ocaml_binary:impl_binary.bzl", "impl_binary")
 
@@ -74,6 +74,8 @@ def _ppx_executable(ctx):
     return impl_binary(ctx) # , tc.target, tc, tc.compiler, [])
 
 ########## DECL:  PPX_EXECUTABLE  ################
+rule_options = options("rules_ocaml")
+rule_options.update(options_binary())
 ppx_executable = rule(
     implementation = _ppx_executable,
     doc = """Generates a PPX executable.  Provides: [OcamlExecutableMarker](providers_ppx.md#ppxexecutableprovider).
@@ -83,7 +85,7 @@ ppx_executable = rule(
     ## FIXME: use apis.bzl from rules_ocaml
 
     attrs = dict(
-        options("rules_ocaml"),
+        rule_options,
         _linkall = attr.label(default = "@rules_ocaml//cfg/executable:linkall"),
         # _linkall     = attr.label(default = "@ppx//executable/linkall"),
         # threading is supported by pkg @ocaml//threads; just add it
@@ -132,7 +134,7 @@ ppx_executable = rule(
 
         prologue = attr.label_list(
             doc = "List of OCaml dependencies.",
-            providers = [[OcamlArchiveMarker],
+            providers = [[OCamlArchiveProvider],
                          [OCamlImportProvider],
                          [OCamlLibraryProvider],
                          [OCamlModuleProvider],
@@ -157,7 +159,7 @@ ppx_executable = rule(
         ),
         epilogue = attr.label_list(
             doc = "List of OCaml dependencies.",
-            providers = [[OcamlArchiveMarker],
+            providers = [[OCamlArchiveProvider],
                          [OCamlImportProvider],
                          [OCamlLibraryProvider],
                          [OCamlModuleProvider],

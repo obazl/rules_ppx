@@ -69,19 +69,28 @@ def _ppx_inline_test_impl(name,
 ppx_inline_test = macro(
     inherit_attrs = ocaml_test,
     implementation = _ppx_inline_test_impl,
+    doc = """
+ppx inline test doc...
+    """,
     attrs = {
         # "srcs": attr.label_list(configurable = False),
         # "deps": attr.label_list(configurable = False),
         "testsuites": attr.string_list(
+            doc = "testsuites ...",
             mandatory    = True,
             configurable = False,
         ),
-        "prologue": attr.label_list(configurable = False),
-        "epilogue": attr.label_list(configurable = False),
-        "vm_linkage": attr.string(
-            configurable = False,
-            default = "static",
-        ),
+        # "prologue": attr.label_list(
+        #     doc = "prolog ...",
+        #     configurable = False),
+        # "epilogue": attr.label_list(
+        #     doc = "epilog ...",
+        #     configurable = False),
+        # "vm_linkage": attr.string(
+        #     doc = "vm linkage ...",
+        #     configurable = False,
+        #     default = "static",
+        # ),
         "args": None,
         "main": None,
     },
@@ -288,8 +297,14 @@ ppx_inline_test_ppx = macro(
     inherit_attrs = ppx_executable,
     implementation = _ppx_inline_test_ppx_impl,
     attrs = {
-        "prologue": attr.label_list(configurable = False),
-        "epilogue": attr.label_list(configurable = False),
+        "prologue": attr.label_list(
+            doc = "prologue",
+            configurable = False
+        ),
+        "epilogue": attr.label_list(
+            doc = "prologue",
+            configurable = False
+        ),
         "main": None
     },
 )

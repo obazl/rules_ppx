@@ -19,9 +19,9 @@ load("//build/_rules:ppx_inline_test.bzl" ,
      _ppx_inline_test_ppx       = "ppx_inline_test_ppx",
      _ppx_inline_test_suite     = "ppx_inline_test_suite")
 
-# load("//build/_rules:ppx_test.bzl",
-#      _ppx_expect_test = "ppx_expect_test",
-#      _ppx_test = "ppx_test")
+load("//build/_rules:ppx_expect_test.bzl",
+     _ppx_expect_test = "ppx_expect_test")
+     # _ppx_test = "ppx_test")
 
 ppx_executable          = _ppx_executable
 ppx_module              = _ppx_module
@@ -32,5 +32,5 @@ ppx_inline_test_signature = _ppx_inline_test_signature
 ppx_inline_test_ppx     = _ppx_inline_test_ppx
 ppx_inline_test_suite   = _ppx_inline_test_suite
 
-# ppx_expect_test  = _ppx_expect_test
+ppx_expect_test  = _ppx_expect_test
 # ppx_test         = _ppx_test
